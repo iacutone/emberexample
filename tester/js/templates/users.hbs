@@ -1,0 +1,19 @@
+<h2>Users</h2>
+
+{{#linkTo "new_user"}}New User{{/linkTo}}
+
+<table>
+  <thead>
+    <th>name</th>
+  </thead>
+  <tbody>
+    {{#each user in controller}}
+    <tr>
+      <td>{{ user.name }}</td>
+      <td>{{#linkTo "user" user }}view{{/linkTo}}</td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+

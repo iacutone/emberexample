@@ -1,0 +1,9 @@
+<h2>User</h2>
+
+<p>
+  <b>Name:</b> {{ name }}
+</p>
+
+{{#linkTo "users"}}←All Users{{/linkTo}}
+{{#linkTo "edit_user" model}}Edit{{/linkTo}}
+<a href="#" {{action "destroy"}}>Destroy</a>
