@@ -9,10 +9,18 @@ App.Song = Ember.Object.extend({
 });
 
 App.Artist = Ember.Object.extend({
-  name: null
+  name: null,
+  
+  slug: function(){
+  	return this.get('name').dasherize();
+  }.property('name'),
+  
+  songs: function(){
+  	return App.Songs.filterProperty('artist', this.get('name'));
+  }.property('name', 'App.Songs.@each.artist')
 });
 
-var artistNames = ['Led Zeppelin', 'Black Moon'];
+var artistNames = ['Led Zeppelin', 'Black Moon', 'Little Dragon'];
 
 App.Artists = artistNames.map(function(name){ 
 	return App.Artist.create({ name: name });
@@ -24,12 +32,20 @@ App.Songs.pushObject(App.Song.create({ title: 'Black Dog', artist: 'Led Zeppelin
 App.Songs.pushObject(App.Song.create({ title: 'Talk Shit', artist: 'Black Moon', rating: 10 }));
 
 App.Router.map(function(){
-	this.route('artists', { path: '/artists'} );
+	this.resource('artists', function(){
+		this.route('songs', { path: ':slug' });
+	});
 });
 
 App.ArtistsRoute = Ember.Route.extend({
 	model: function(){
 		return App.Artists;
+	}
+});
+
+App.ArtistsSongsRoute = Ember.Route.extend({
+	model: function(params){
+		return App.Artists.findProperty('slug', params.slug);
 	}
 });
 

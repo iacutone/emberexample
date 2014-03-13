@@ -11,9 +11,7 @@
   <script type="text/x-handlebars">
     <div class="container">
       <div class="page-header">
-        {{#link-to "index"}}
-          <h1>Sweet Songs<small> with Ember.js</small></h1>
-        {{/link-to}}
+        <h1>Sweet Songs<small> with Ember.js</small></h1>
       </div>
       <div class="row">
         {{outlet}}
@@ -21,27 +19,40 @@
     </div>
   </script>
   
-  <script type="text/x-handlebars" data-template-name="index">
-    <div class="col-md-4">
+  <script type="text/x-handlebars" data-template-name="artists/index">
+    <div class='list-group-item empty list'>
+      <div class='empty-messages'>
+        Select and artist.
+      </div>
     </div>
   </script>
   
   <script type="text/x-handlebars" data-template-name="artists">
-    <div class="col-md-4">
-      <div class="list-group">
-      {{#each model}}
-        <a href='#' class='list-group-item'>{{name}}</a>
-      {{/each}}
-    </div>
-    <div class="col-md-8">
-      <div class="list-group">
-        <div class="list-group-item empty-list">
-          <div class="empty-message">
-            Select an artist.
-          </div>
+    <div class='row'>
+      <div class="col-xs-6 col-md-4">
+        <div class="list-group">
+        {{#each model}}
+        {{#link-to "artists.songs" this class='list-group-item'}}
+          {{name}}
+        {{/link-to}}
+        {{/each}}
+      </div>
+      <div class="col-xs-12 col-md-8">
+        <div class="list-group">
+          {{outlet}}
         </div>
       </div>
     </div>
+  </script>
+  
+  <script type="text/x-handlebars" data-template-name="artists/songs">
+    {{#each songs}}
+      <a href='#' class='list-group-item'>{{title}}</a>
+    {{else}}  
+      <div class='empty-messages'>
+        There are no {{name}} songs.
+      </div>
+    {{/each}}
   </script>
 
   <script src="js/libs/jquery-1.10.2.js"></script>
