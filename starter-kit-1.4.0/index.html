@@ -11,7 +11,9 @@
   <script type="text/x-handlebars">
     <div class="container">
       <div class="page-header">
-        <h1>Sweet Songs<small> with Ember.js</small></h1>
+        {{#link-to "index"}}
+          <h1>Sweet Songs<small> with Ember.js</small></h1>
+        {{/link-to}}
       </div>
       <div class="row">
         {{outlet}}
@@ -28,26 +30,36 @@
   </script>
   
   <script type="text/x-handlebars" data-template-name="artists">
-    <div class='row'>
-      <div class="col-xs-6 col-md-4">
-        <div class="list-group">
-        {{#each model}}
-        {{#link-to "artists.songs" this class='list-group-item'}}
-          {{name}}
-        {{/link-to}}
-        {{/each}}
-      </div>
-      <div class="col-xs-12 col-md-8">
-        <div class="list-group">
-          {{outlet}}
+    <div class='container'>
+      <div class='row-fluid'>
+        <div class="col-md-4">
+          <div class="list-group">
+            {{input type="text" class="new-artist" placeholder="New Artist" value=newArtist}}
+            <button class="btn btn-primary btn-sm new-artist-button" {{action "createArtist"}}>Add</button>
+          <div class="list-group-item">
+          </div>
+          {{#each model}}
+          {{#link-to "artists.songs" this class='list-group-item'}}
+            {{name}}
+          {{/link-to}}
+          {{/each}}
+        </div>
+        <div class="col-md-8">
+          <div class="list-group">
+            {{outlet}}
+          </div>
         </div>
       </div>
     </div>
   </script>
   
   <script type="text/x-handlebars" data-template-name="artists/songs">
+    <div class="list-group-item">
+      {{input type="text" class="new-song" placeholder="New Song" value=newSong}}
+      <button class="btn btn-primary btn-sm new-song-button" {{action "createSong"}}>Add</button>
+    </div>
     {{#each songs}}
-      <a href='#' class='list-group-item'>{{title}}</a>
+      <a href='#' class="list-group-item">{{title}}</a>
     {{else}}  
       <div class='empty-messages'>
         There are no {{name}} songs.
