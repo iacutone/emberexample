@@ -33,7 +33,7 @@
       <div class="col-md-4">
         <div class="list-group">
           <div class="list-group-item">
-            {{input type="text" class="new-artist" placeholder="New Artist" value=newArtist}}
+            {{input type="text" class="new-artist" placeholder="New Artist" value=newArtist insert-newline='createArtist'}}
             <button class="btn btn-primary btn-sm new-artist-button" {{action "createArtist"}}
             {{bind-attr disabled=disabled}}>Add</button>
           </div>
@@ -54,7 +54,7 @@
     <script type="text/x-handlebars" data-template-name="artists/songs">
       {{#if canCreateSong}}
         <div class="list-group-item">
-          {{input type="text" class="new-song" placeholder=newSongPlaceholder value=newTitle}}
+          {{input type="text" class="new-song" placeholder=newSongPlaceholder value=newTitle insert-newline='createSong'}}
           <button class="btn btn-primary btn-sm new-song-button" {{action "createSong"}}>Add</button>
         </div>
       {{/if}}
