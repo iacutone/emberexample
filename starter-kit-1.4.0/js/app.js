@@ -28,8 +28,8 @@ App.Artists = artistNames.map(function(name){
 
 App.Songs = Ember.A();
 
-App.Songs.pushObject(App.Song.create({ title: 'Black Dog', artist: 'Led Zeppelin', rating: 8 }));
-App.Songs.pushObject(App.Song.create({ title: 'Talk Shit', artist: 'Black Moon', rating: 10 }));
+App.Songs.pushObject(App.Song.create({ title: 'Black Dog', artist: 'Led Zeppelin', rating: 5 }));
+App.Songs.pushObject(App.Song.create({ title: 'Talk Shit', artist: 'Black Moon', rating:4 }));
 
 App.Router.map(function(){
 	this.resource('artists', function(){
@@ -63,12 +63,44 @@ App.ArtistsSongsRoute = Ember.Route.extend({
 	},
   actions: {
     createSong: function(){
-    var title = this.get('controller.newSong');
-    var artist = this.get('controller.model.name');
+    var artist = this.controller.get('model.name');
+    var title = this.controller.get('newTitle');
     var song = App.Song.create({ title: title, artist: artist });
     App.Songs.pushObject(song);
-    this.get('controller').set('newSong', '');
+    this.controller.set('newTitle', '');
+    }
   }
+});
+
+App.StarRating = Ember.View.extend({
+  templateName: 'star-rating',
+  classNames: ['rating-panel'],
+  
+  rating: Ember.computed.alias('context.rating'),
+  fullStars: Ember.computed.alias('rating'),
+  numStars: Ember.computed.alias('maxRating'),
+  
+  stars: function(){
+    var ratings = [];
+    var fullStars = this.starRange(1, this.get('fullStars'), 'full');
+    var emptyStars = this.starRange(this.get('fullStars') + 1, this.get('numStars'), 'empty');
+    Array.prototype.push.apply(ratings, fullStars);
+    Array.prototype.push.apply(ratings, emptyStars);
+    return ratings;
+  }.property('fullStars', 'numStars'),
+  
+  starRange: function(start, end, type){
+    var starsData = [];
+    for (var i = start; i <= end; i++) {
+      starsData.push({ rating: i, full: type === 'full' });
+    };
+    return starsData;
+  },
+  actions: {
+    setRating: function(){
+      var newRating = Ember.$(event.target).data('rating');
+      this.set('rating', newRating);
+    }
   }
 });
 
