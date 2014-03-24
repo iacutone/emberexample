@@ -2,34 +2,35 @@ App = Ember.Application.create({
   LOG_TRANSITIONS: true, // basic logging of successful transitions
 });
 
+App.Artist = Ember.Object.extend({
+  id: '',
+  name: '',
+  songs: [],
+  
+  slug: function(){
+    return this.get('name').dasherize();
+  }.property('name')
+});
+  
+App.Artist.reopenClass({
+  createRecord: function(data){
+    var artist = App.artist.create({ id: data.id, name: data.name});
+    artist.set('songs', this.extractSongs(data.songs, 'artist'));
+    return artist;
+  },
+  extractSongs: function(dataSongs, artist){
+    return dataSongs.map(function(song){
+      return App.Song.create({ title: song.title, rating: song.rating, artist: artist });
+    });
+  }
+});
+
 App.Song = Ember.Object.extend({
+  id: null,
   title: null,
   rating: null,
   artist: null
 });
-
-App.Artist = Ember.Object.extend({
-  name: null,
-  
-  slug: function(){
-  	return this.get('name').dasherize();
-  }.property('name'),
-  
-  songs: function(){
-  	return App.Songs.filterProperty('artist', this.get('name'));
-  }.property('name', 'App.Songs.@each.artist')
-});
-
-var artistNames = ['Led Zeppelin', 'Black Moon', 'Little Dragon'];
-
-App.Artists = artistNames.map(function(name){ 
-	return App.Artist.create({ name: name });
-});
-
-App.Songs = Ember.A();
-
-App.Songs.pushObject(App.Song.create({ title: 'Black Dog', artist: 'Led Zeppelin', rating: 5 }));
-App.Songs.pushObject(App.Song.create({ title: 'Talk Shit', artist: 'Black Moon', rating:4 }));
 
 App.Router.map(function(){
 	this.resource('artists', function(){
@@ -45,32 +46,72 @@ App.IndexRoute = Ember.Route.extend({
 
 App.ArtistsRoute = Ember.Route.extend({
 	model: function(){
-		return App.Artists;
+		var artistObjects = Ember.A();
+    Ember.$.getJSON('http://localhost:9393/artists', function(artists){
+      artists.forEach(function(data){
+        artistObjects.pushObject(App.Artist.createRecord(data));
+      });
+    });
+    return artistObjects;
 	},
   
   actions: {
     createArtist: function(){
-      var name = this.get('controller').get('newArtist');
-      var artist = App.Artist.create({ name: name });
-      App.Artists.pushObject(artist);
-      this.get('controller').set('newTitle', '');
-      this.transitionTo('artists.songs', artist);
+      var name = this.get('controller').get('newName');
+      
+      Ember.$.ajax('http://localhost:9393/artists', {
+        type: 'POST',
+        dataType: 'json',
+        data: { name: name },
+        context: this,
+        success: function(data){
+          var artist = App.Artist.createRecord(data);
+          this.modelFor('artists').pushObject(artist);
+          this.get('controller').set('newName', '');
+          this.transitionTo('artist.songs', artist);
+          },
+        error: function(){
+          alert('Falied to save artist!');
+        }
+      });
     }
   }
 });
 
 App.ArtistsSongsRoute = Ember.Route.extend({
 	model: function(params){
-		return App.Artists.findProperty('slug', params.slug);
+		var artist = App.Artist.create();
+    var url = 'http://localhost:9393/artists' + params.slug;
+    Ember.$.getJSON(url, function(data){
+      App.Artist.createRecord(data);
+      artist.setProperties({
+        id: data.id,
+        name: data.name,
+        songs: App.Artist.extractSongs(data.songs, artist)
+      });
+    });
+    return artist;
 	},
   
   actions: {
     createSong: function(){
-    var artist = this.controller.get('model.name');
+    var artist = this.controller.get('model');
     var title = this.controller.get('newTitle');
-    var song = App.Song.create({ title: title, artist: artist });
-    App.Songs.pushObject(song);
-    this.controller.set('newTitle', '');
+    Ember.$.ajax('http://localhost:9393/songs',{
+      type: 'POST',
+      dataType: 'json',
+      context: this,
+      data: { title: title, artist_id: artist.id },
+      success: function(data){
+        var song = App.Song.createRecord(data);
+        song.set('artist', artist);
+        this.modelFor('artists.songs').get('songs').pushObject(song);
+        this.get('controller').set('newTitle', '');
+      },
+      error: function(){
+        alert('Failed to create song.');
+      }
+    });
     }
   }
 });
@@ -115,6 +156,14 @@ App.ArtistsController = Ember.ArrayController.extend({
 });
 
 App.ArtistsSongsController = Ember.ObjectController.extend({
+  // sortProperties: ['rating:desc', 'title:asc'],
+  // sortedSongs: Ember.computed.sort('model', 'sortProperties'),
+  // sortOptions: [
+  //   {id: 'rating:desc,title:asc', name: 'Best'},
+  //   {id: 'title:asc', name: 'Title asc'}
+  // ]
+  // selectedSort: 'rating:desc,title:asc',
+  
   newSongPlaceholder: function(){
     return 'New ' + this.get('name') + ' song.';
   }.property('name'),
